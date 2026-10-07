@@ -1,0 +1,32 @@
+# Секреты
+.env
+
+# Данные приложения (SQLite)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Бэкапы редактора aaPanel
+*.bak
+*.bak.*
+server.js.bak*
+
+# Заглушки и служебное aaPanel (только в корне)
+/index.html
+/404.html
+/502.html
+.htaccess
+.user.ini
+.well-known/
+_aapanel_backup/
+
+# ОС / редакторы
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

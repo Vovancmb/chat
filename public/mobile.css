@@ -1,0 +1,177 @@
+/* ============================================================= */
+/*          МОБИЛЬНАЯ И ПЛАНШЕТНАЯ АДАПТАЦИЯ                      */
+/* ============================================================= */
+
+.hamburger {
+  display: none;
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 6px 12px;
+  margin-right: 4px;
+  color: var(--text);
+  border-radius: 6px;
+}
+.hamburger:hover { background: var(--bg); }
+
+.sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 998; display: none;
+}
+.sidebar-overlay.hidden { display: none; }
+
+/* Планшеты и узкие окна */
+@media (max-width: 1024px) {
+  .main { grid-template-columns: 240px 1fr; }
+}
+
+/* Телефоны */
+@media (max-width: 768px) {
+  html, body { font-size: 14px; }
+  .hamburger { display: inline-block; }
+  .main {
+    grid-template-columns: 1fr;
+    height: 100dvh; /* динамическая высота для мобильных браузеров */
+  }
+  .content { height: 100dvh; }
+  .sidebar {
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    width: min(84vw, 320px);
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.3);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay:not(.hidden) { display: block; }
+
+  /* Топбар */
+  .topbar { padding: 10px 12px; gap: 6px; }
+  .topbar h2 { font-size: 15px; }
+  .topbar-actions { gap: 4px; }
+  .topbar-actions .ghost-small {
+    padding: 6px 8px;
+    font-size: 13px;
+    min-width: 34px;
+    min-height: 34px;
+  }
+  /* Скрываем длинные подписи */
+  #btn-call::before { content: '📞'; }
+  #btn-join-call { font-size: 12px; padding: 6px 8px; }
+  #btn-chat-members { font-size: 12px; padding: 6px 8px; }
+  #btn-delete-chat { font-size: 12px; padding: 6px 8px; }
+
+  /* Сообщения */
+  .messages { padding: 10px 12px; }
+  .msg { padding: 6px 4px; gap: 8px; }
+  .msg .body { font-size: 15px; }
+  .msg-head { font-size: 12px; }
+  .msg-avatar { width: 28px; height: 28px; font-size: 10px; }
+
+  /* Composer */
+  .composer {
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) 10px;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  .composer textarea {
+    padding: 10px 12px;
+    font-size: 15px;
+    border-radius: 22px;
+    min-height: 40px;
+  }
+  .composer button[type=submit] {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 22px;
+  }
+  .attach-btn {
+    padding: 8px 10px;
+    font-size: 18px;
+    border-radius: 22px;
+  }
+
+  /* Модалки — почти на весь экран */
+  .modal { padding: 12px; align-items: end; }
+  .modal-card {
+    width: 100%;
+    max-height: 90dvh;
+    padding: 20px 16px;
+    border-radius: 16px 16px 0 0;
+  }
+  .modal-card h3 { font-size: 16px; }
+
+  /* Приглашение на звонок — компактно */
+  .incoming-call { padding: 12px; }
+  .incoming-call-card {
+    min-width: 0;
+    width: 100%;
+    max-width: 340px;
+    padding: 22px 20px;
+  }
+  .call-btn { width: 60px; height: 60px; font-size: 24px; }
+
+  /* UI звонка — адаптивная сетка */
+  .call-header { padding: 10px 14px; }
+  .call-title { font-size: 14px; }
+  .call-grid {
+    grid-template-columns: 1fr !important; /* по одному участнику на экран */
+    gap: 6px;
+    padding: 8px;
+  }
+  .call-tile.screen { grid-column: auto; }
+  .call-controls {
+    padding: 12px 8px calc(12px + env(safe-area-inset-bottom)) 8px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .call-btn { width: 48px; height: 48px; font-size: 20px; }
+
+  /* Мини-панель звонка — снизу по центру */
+  .call-mini {
+    left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom));
+    justify-content: space-between;
+  }
+  .call-mini-info { font-size: 12px; }
+
+  /* Уведомления — сверху, во всю ширину */
+  .mention-toasts {
+    left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top));
+    max-width: none;
+  }
+  .mention-toast { padding: 10px; }
+
+  /* Меню профиля — компактно */
+  .me-card { padding: 8px 10px; }
+
+  /* Список коллег — крупнее тапы */
+  .colleague-li { padding: 10px 8px; }
+  .colleague-li .u-btn { font-size: 16px; padding: 6px 8px; }
+
+  /* Чат-список */
+  .sidebar li { padding: 10px 12px; font-size: 14px; }
+}
+
+/* Очень узкие экраны (iPhone SE) */
+@media (max-width: 380px) {
+  .topbar h2 { font-size: 14px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .modal-card { padding: 16px 12px; }
+  .call-btn { width: 42px; height: 42px; font-size: 18px; }
+}
+
+/* Ландшафт на мобильном */
+@media (max-height: 500px) and (orientation: landscape) {
+  .call-header { padding: 6px 12px; }
+  .call-controls { padding: 8px; }
+  .call-btn { width: 42px; height: 42px; font-size: 18px; }
+  .call-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Отключаем hover-эффекты на тач-устройствах (iOS) */
+@media (hover: none) {
+  .msg:hover { background: transparent; }
+  .sidebar li:hover { background: transparent; }
+}

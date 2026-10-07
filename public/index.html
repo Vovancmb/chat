@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<base href="/chat/">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>a22 Chat</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#5b5fc7" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="stylesheet" href="style.css?v=21" />
+<link rel="stylesheet" href="mobile.css?v=3" />
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<div id="auth" class="auth">
+  <div class="auth-card">
+    <div class="auth-logo">a22</div>
+    <h1>Вход</h1>
+    <p class="muted">Войдите с выданными вам учётными данными</p>
+    <input id="username" placeholder="Логин" autocomplete="username" />
+    <input id="password" type="password" placeholder="Пароль" autocomplete="current-password" />
+    <div class="row"><button id="btn-login">Войти</button></div>
+    <div id="auth-error" class="error"></div>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="main" class="teams-app hidden">
+
+  <!-- 1. Rail (узкая левая панель с иконками) -->
+  <aside class="rail">
+    <button class="rail-btn active" id="rail-chat" title="Чат"><span class="rail-ico">💬</span></button>
+    <button class="rail-btn" id="rail-teams" title="Контакты"><span class="rail-ico">👥</span></button>
+    <button class="rail-btn" id="rail-calendar" title="Календарь"><span class="rail-ico">📅</span></button>
+    <button class="rail-btn" id="rail-calls" title="Звонки"><span class="rail-ico">📞</span></button>
+    <button class="rail-btn" id="rail-files" title="Файлы"><span class="rail-ico">📁</span></button>
+    <div class="rail-spacer"></div>
+    <button class="rail-btn" id="rail-theme" title="Сменить тему"><span class="rail-ico" id="theme-ico">🌙</span></button>
+    <div class="rail-me" id="me-card" title="Профиль">
+      <div class="avatar avatar-sm" id="me-avatar"></div>
+    </div>
+  </aside>
+
+  <!-- 2. Chat list -->
+  <aside class="chat-list">
+    <header class="list-header">
+      <h1>Чат</h1>
+      <div class="list-actions">
+        <button class="icon-btn" title="Фильтр">≡</button>
+        <button class="icon-btn" title="Новый чат" id="btn-new-chat">✎</button>
+      </div>
+    </header>
+
+    <div class="list-tabs">
+      <button class="list-tab active">Последние</button>
+      <button class="list-tab">Контакты</button>
+    </div>
+
+    <div class="list-scroll">
+      <ul id="chats" class="list-items"></ul>
+
+      <div class="list-section">
+        <div class="list-section-title">Контакты</div>
+        <ul id="colleagues" class="list-items list-colleagues"></ul>
+      </div>
+
+      <div class="list-section hidden" id="admin-section">
+        <div class="list-section-title">Пользователи (админ)</div>
+        <ul id="users" class="list-items"></ul>
+        <button id="btn-add-user" class="ghost-list">+ Добавить пользователя</button>
+        <button id="btn-admin-logs" class="ghost-list">📋 Логи системы</button>
+      </div>
+    </div>
+
+    <footer class="list-footer">
+      <span id="me" class="me-name">@—</span>
+      <a href="desktop/a22-chat-setup-1.0.0.exe" class="icon-btn" title="Скачать для Windows" download>⬇️</a>
+      <button id="btn-notif-toggle" class="icon-btn" title="Уведомления">🔔</button>
+      <button id="btn-logout" class="icon-btn" title="Выйти">⎋</button>
+    </footer>
+  </aside>
+
+  <!-- 3. Chat main -->
+  <main class="chat-main" id="content">
+    <header class="chat-header">
+      <div class="chat-header-left">
+        <div class="avatar avatar-sm hidden" id="chat-peer-avatar"></div>
+        <h2 id="chat-title">Чат</h2>
+        <nav class="chat-tabs">
+          <button class="chat-tab active">Чат</button>
+          <button class="chat-tab" id="btn-chat-members">Участники</button>
+        </nav>
+      </div>
+      <div class="chat-header-right">
+        <button class="icon-btn" id="btn-call" title="Звонок">📞</button>
+        <button class="icon-btn hidden" id="btn-join-call" title="Присоединиться">🟢</button>
+        <button class="icon-btn danger hidden" id="btn-delete-chat" title="Удалить чат">🗑</button>
+        <button class="icon-btn" id="btn-edit-profile" title="Профиль">👤</button>
+      </div>
+    </header>
+
+    <div id="messages" class="messages"></div>
+    <div id="typing" class="typing"></div>
+
+    <form id="composer" class="composer">
+      <div class="composer-wrap">
+        <div id="attachment-preview" class="attachment-preview hidden"></div>
+        <textarea id="input" placeholder="Введите сообщение" rows="1"></textarea>
+        <div id="mention-picker" class="mention-picker hidden"></div>
+      </div>
+      <div class="composer-actions">
+        <button type="button" class="icon-btn" title="Форматирование">Aa</button>
+        <button type="button" class="icon-btn" title="Эмодзи">😊</button>
+        <button type="button" class="icon-btn" id="btn-attach" title="Прикрепить">📎</button>
+        <button type="submit" id="btn-send" class="send-btn" title="Отправить">➤</button>
+      </div>
+      <input type="file" id="file-input" hidden />
+    </form>
+
+    <div id="drop-overlay" class="drop-overlay hidden">
+      <div class="drop-inner">Отпустите файл, чтобы прикрепить</div>
+    </div>
+
+    <div id="call-banner" class="call-banner hidden">
+      <span>📞 В чате идёт звонок</span>
+      <button id="btn-banner-join" class="ghost-small">Присоединиться</button>
+      <button id="btn-banner-dismiss" class="icon-btn" title="Скрыть">✕</button>
+    </div>
+  </main>
+</div>
+
+<!-- Мобильный оверлей -->
+<div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+<!-- Тосты -->
+<div id="mention-toasts" class="mention-toasts"></div>
+
+<!-- ============== INCOMING CALL ============== -->
+<div id="incoming-call" class="incoming-call hidden">
+  <div class="incoming-call-card">
+    <div class="avatar avatar-lg" id="incoming-avatar"></div>
+    <div class="incoming-call-name" id="incoming-name">—</div>
+    <div class="incoming-call-sub">Входящий звонок…</div>
+    <div class="incoming-call-actions">
+      <button id="btn-incoming-decline" class="call-btn danger" title="Отклонить">📵</button>
+      <button id="btn-incoming-accept" class="call-btn accept" title="Принять">📞</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== CALL UI ============== -->
+<div id="call-overlay" class="call-overlay hidden">
+  <div class="call-header">
+    <div class="call-title">
+      <span id="call-chat-name">Звонок</span>
+      <span id="call-duration" class="call-duration">00:00</span>
+    </div>
+    <button id="btn-call-minimize" class="call-mini-btn" title="Свернуть">—</button>
+  </div>
+  <div id="call-grid" class="call-grid"></div>
+  <div class="call-controls">
+    <button id="btn-toggle-mic" class="call-btn" title="Микрофон">🎤</button>
+    <button id="btn-toggle-cam" class="call-btn" title="Камера">📹</button>
+    <button id="btn-toggle-screen" class="call-btn" title="Демонстрация экрана">🖥️</button>
+    <button id="btn-request-control" class="call-btn" title="Управление вкладкой">🖱️</button>
+    <button id="btn-call-leave" class="call-btn danger" title="Покинуть звонок">📵</button>
+  </div>
+</div>
+
+<div id="call-mini" class="call-mini hidden">
+  <div class="call-mini-info">
+    <span class="call-mini-dot"></span>
+    <span id="call-mini-title">Звонок</span>
+    <span id="call-mini-count"></span>
+  </div>
+  <button id="btn-call-expand" class="call-mini-btn">Развернуть</button>
+  <button id="btn-call-leave-mini" class="call-mini-btn danger">📵</button>
+</div>
+
+<!-- ============== REMOTE DESKTOP ============== -->
+<div id="remote-request-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Запрос удалённого управления</h3>
+    <div class="remote-req-user">
+      <div class="avatar avatar-lg" id="remote-req-avatar"></div>
+      <div>
+        <div class="remote-req-name" id="remote-req-name">—</div>
+        <div class="muted">хочет получить доступ к вашему рабочему столу</div>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:12px">
+      ⚠️ Разрешайте только тем, кому доверяете.<br>
+      Вы увидите оранжевую рамку и сможете остановить управление в любой момент.
+    </div>
+    <div class="row">
+      <button id="btn-remote-decline" class="secondary">Отклонить</button>
+      <button id="btn-remote-accept" class="danger-btn">Разрешить</button>
+    </div>
+  </div>
+</div>
+
+<div id="remote-overlay-me" class="remote-overlay hidden">
+  <div class="remote-overlay-info">
+    🖥️ Управление вашим компьютером — <span id="remote-overlay-name">—</span>
+  </div>
+  <button id="btn-remote-overlay-stop" class="ghost-small danger">Остановить</button>
+</div>
+
+<div id="remote-banner-active" class="remote-banner hidden">
+  <span class="remote-dot"></span>
+  <span>Вы управляете удалённым рабочим столом</span>
+  <button id="btn-remote-banner-stop" class="ghost-small danger">Стоп</button>
+</div>
+
+<div id="remote-viewer" class="remote-viewer hidden">
+  <div class="remote-viewer-head">
+    <span id="remote-viewer-title">Удалённый рабочий стол</span>
+    <button id="btn-remote-viewer-close" class="ghost-small danger">Завершить</button>
+  </div>
+  <video id="remote-viewer-video" autoplay playsinline muted></video>
+</div>
+
+<!-- ============== EMOJI PICKER ============== -->
+<div id="emoji-picker" class="emoji-picker hidden">
+  <div class="emoji-tabs">
+    <button class="emoji-tab active" data-cat="smileys">😀</button>
+    <button class="emoji-tab" data-cat="gestures">👍</button>
+    <button class="emoji-tab" data-cat="hearts">❤️</button>
+    <button class="emoji-tab" data-cat="objects">💼</button>
+    <button class="emoji-tab" data-cat="food">🍕</button>
+    <button class="emoji-tab" data-cat="animals">🐶</button>
+  </div>
+  <div id="emoji-grid" class="emoji-grid"></div>
+</div>
+
+<!-- ============== CALENDAR ============== -->
+<div id="calendar-modal" class="modal hidden">
+  <div class="modal-card calendar-card">
+    <div class="cal-header">
+      <button class="icon-btn" id="cal-prev">‹</button>
+      <h3 id="cal-month-year">Месяц Год</h3>
+      <button class="icon-btn" id="cal-next">›</button>
+      <button class="ghost-small" id="cal-today">Сегодня</button>
+      <button class="u-btn" id="cal-close">✕</button>
+    </div>
+    <div class="cal-weekdays">
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+    </div>
+    <div id="cal-grid" class="cal-grid"></div>
+    <div class="cal-footer">
+      <div id="cal-selected-info" class="muted">Выберите день</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== CALLS ============== -->
+<div id="calls-modal" class="modal hidden">
+  <div class="modal-card">
+    <div class="calls-header">
+      <h3>Звонки</h3>
+      <button class="u-btn" id="calls-close">✕</button>
+    </div>
+    <div id="calls-active" class="calls-section"></div>
+    <div class="calls-section-title">Начать новый звонок</div>
+    <div id="calls-contacts" class="calls-contacts"></div>
+  </div>
+</div>
+
+<!-- ============== DOWNLOAD APP MODAL ============== -->
+<div id="download-modal" class="modal hidden">
+  <div class="modal-card download-card">
+    <div class="dl-header">
+      <div class="dl-logo">a22</div>
+      <div>
+        <h3>a22 Chat для Windows</h3>
+        <p class="muted">Десктопное приложение</p>
+      </div>
+      <button class="u-btn" id="dl-close" style="margin-left:auto">✕</button>
+    </div>
+
+    <div class="dl-features">
+      <div class="dl-feature"><span class="dl-ico">💬</span><span>Чаты и каналы</span></div>
+      <div class="dl-feature"><span class="dl-ico">📞</span><span>Звонки и видео</span></div>
+      <div class="dl-feature"><span class="dl-ico">🖥️</span><span>Шаринг экрана</span></div>
+      <div class="dl-feature"><span class="dl-ico">🖱️</span><span>Удалённое управление</span></div>
+      <div class="dl-feature"><span class="dl-ico">🔔</span><span>Уведомления Windows</span></div>
+      <div class="dl-feature"><span class="dl-ico">🌙</span><span>Тёмная тема</span></div>
+    </div>
+
+    <div class="dl-platforms">
+      <a href="desktop/a22-chat-setup-1.0.0.exe" class="dl-btn" download>
+        <span class="dl-btn-ico">🪟</span>
+        <div class="dl-btn-info">
+          <div class="dl-btn-title">Скачать для Windows</div>
+          <div class="dl-btn-sub">Windows 10/11 · 64-bit · <span id="dl-size">~100 МБ</span></div>
+        </div>
+        <span class="dl-btn-arrow">⬇</span>
+      </a>
+    </div>
+
+    <div class="dl-note">
+      ⚠️ При запуске Windows SmartScreen может предупредить — это нормально для приложений без платного сертификата.
+      Нажмите <b>«Подробнее»</b> → <b>«Выполнить в любом случае»</b>.
+    </div>
+
+    <div class="dl-actions">
+      <a href="desktop/" class="ghost-small" target="_blank">Страница загрузки →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============== MODALS ============== -->
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <h3 id="modal-title">Заголовок</h3>
+    <input id="modal-input-1" placeholder="" autocomplete="off" />
+    <input id="modal-input-2" type="password" placeholder="" autocomplete="new-password" class="hidden" />
+    <input id="modal-input-3" placeholder="" autocomplete="off" class="hidden" />
+    <label class="checkbox-row hidden" id="modal-admin-row">
+      <input id="modal-input-admin" type="checkbox" /> Сделать администратором
+    </label>
+    <div id="modal-error" class="error"></div>
+    <div class="row">
+      <button id="btn-modal-cancel" class="secondary">Отмена</button>
+      <button id="btn-modal-submit">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="profile-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Мой профиль</h3>
+    <div class="avatar-uploader">
+      <div class="avatar avatar-lg" id="profile-avatar-preview"></div>
+      <div>
+        <input type="file" id="profile-avatar-file" accept="image/*" />
+        <button type="button" class="ghost-small" id="btn-avatar-clear">Убрать фото</button>
+      </div>
+    </div>
+    <input id="profile-full-name" placeholder="ФИО (например, Иван Иванов)" />
+    <div class="muted">Логин: <span id="profile-username"></span></div>
+    <div id="profile-error" class="error"></div>
+    <div class="row">
+      <button id="btn-profile-cancel" class="secondary">Отмена</button>
+      <button id="btn-profile-save">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div id="create-chat-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Новый чат</h3>
+    <input id="new-chat-name" placeholder="Название чата" autocomplete="off" />
+    <div class="section-title">Участники</div>
+    <div id="new-chat-users" class="user-picker"></div>
+    <div id="create-chat-error" class="error"></div>
+    <div class="row">
+      <button id="btn-create-chat-cancel" class="secondary">Отмена</button>
+      <button id="btn-create-chat-submit">Создать</button>
+    </div>
+  </div>
+</div>
+
+<div id="members-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Участники чата</h3>
+    <ul id="members-list" class="members-list"></ul>
+    <div class="section-title">Добавить участника</div>
+    <div id="add-member-users" class="user-picker"></div>
+    <div id="members-error" class="error"></div>
+    <div class="row"><button id="btn-members-close">Закрыть</button></div>
+  </div>
+</div>
+
+<div id="control-request-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Запрос управления вкладкой</h3>
+    <div class="control-req-user">
+      <div class="avatar avatar-lg" id="control-req-avatar"></div>
+      <div>
+        <div class="control-req-name" id="control-req-name">—</div>
+        <div class="muted">просит разрешение управлять вашей вкладкой чата</div>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:12px">
+      Управление действует только внутри вкладки <b>a22 Chat</b>.
+    </div>
+    <div id="control-req-error" class="error"></div>
+    <div class="row">
+      <button id="btn-control-decline" class="secondary">Отклонить</button>
+      <button id="btn-control-accept">Разрешить</button>
+    </div>
+  </div>
+</div>
+
+<div id="control-banner" class="control-banner hidden">
+  <span class="control-dot"></span>
+  <span id="control-banner-text">Управление активно</span>
+  <button id="btn-control-stop" class="ghost-small danger">Стоп</button>
+</div>
+
+<div id="control-overlay-me" class="control-overlay hidden">
+  <div class="control-overlay-info">🖱️ Вам управляют — <span id="control-by-name">—</span></div>
+  <button id="btn-control-stop-2" class="ghost-small danger">Остановить</button>
+</div>
+
+<div id="lightbox" class="lightbox hidden">
+  <img id="lightbox-img" alt="" />
+</div>
+
+<script src="socket.io/socket.io.js"></script>
+<script src="app.js?v=64"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  chat-app:
+    build: .
+    container_name: chat-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3080:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - STUN_URL=${STUN_URL}
+      - TURN_URL=${TURN_URL}
+      - TURN_USER=${TURN_USER}
+      - TURN_PASS=${TURN_PASS}

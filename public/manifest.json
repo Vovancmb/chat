@@ -1,0 +1,17 @@
+{
+  "name": "a22 Chat",
+  "short_name": "a22 Chat",
+  "description": "Корпоративный чат с голосовыми и видеозвонками",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#6264a7",
+  "theme_color": "#6264a7",
+  "lang": "ru",
+  "categories": ["productivity", "social"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
